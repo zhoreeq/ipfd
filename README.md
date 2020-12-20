@@ -2,6 +2,8 @@
 
 An [imageboard](https://en.wikipedia.org/wiki/Imageboard), but images are stored in a peer-to-peer network
 
+![Screenshot](contrib/screenshot.jpeg)
+
 Features:
 
 - Easy file sharing without registration and SMS. Supports images, video and audio files.
