@@ -1,0 +1,5 @@
+drop table upvotes;
+drop table downvotes;
+drop table comments;
+drop table posts;
+drop table addresses;

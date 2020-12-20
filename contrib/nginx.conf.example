@@ -1,0 +1,18 @@
+server {
+
+    listen 80;
+    listen [::]:80;
+
+    server_name example.org;
+
+    location / {
+        client_max_body_size 6M;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://[::1]:8000/;
+    }
+
+    location /static {
+        root /etc/ipfd;
+    }
+
+}

@@ -1,0 +1,104 @@
+body { 
+    text-align: center;
+    font-family: monospace;
+    font-size: 16px; 
+    background-color: #5adbff;
+    color: #094074;
+    letter-spacing: 15px;
+}
+
+hr { margin: 50px auto; max-width: 500px; }
+
+.rainbow-text {
+    background-image: repeating-linear-gradient(45deg, violet, indigo, blue, green, yellow, orange, red, violet);
+    text-align: center;
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbow 4s linear infinite;
+}
+
+@keyframes rainbow { 
+    to {background-position:200% center}
+}
+
+.postform {
+    max-width: 600px; 
+    text-align: left;
+    margin: 50px auto;
+}
+
+.postform div { 
+    padding: 10px;
+    font-weight: bold;
+}
+
+input[type="submit"] {
+    font-size: 3em;
+    letter-spacing: 15px;
+    cursor: pointer;
+}
+
+/* content */
+.content { 
+    max-width: 600px;
+    margin: auto;
+}
+
+.post {
+    margin: 50px 0px;
+    padding: 10px;
+    border-bottom: 5px solid #fe9000;
+    background-color: #ffdd4a;
+    letter-spacing: normal;
+}
+
+.post img, video {
+    width: 100%;
+}
+
+a {
+    color: inherit;
+}
+
+a:hover {
+    background: #fe9000;
+}
+
+.post-info {
+    font-size: 0.8em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.post-info div {
+    flex: 0 1 150px;
+    margin: 5px;
+}
+
+.upvote { color: green; }
+.downvote { color: red; }
+
+.comments p {
+    background: #fe9000;
+    text-align: left;
+    border-bottom: 5px solid #ffdd4a;
+    padding: 5px;
+    letter-spacing: normal;
+}
+
+.pagination a {
+    margin: auto 50px;
+}
+
+@media only screen and (max-width: 1080px) {
+    body { font-size: 32px; }
+    .content { max-width: 100%; }
+}
+
+footer {
+    margin-top: 20px;
+    font-size: 0.7em;
+    letter-spacing: normal;
+}

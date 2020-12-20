@@ -1,0 +1,38 @@
+create table addresses(
+    id serial primary key,
+    address inet unique,
+    created_at timestamp not null default Now()
+);
+
+create table posts(
+    id serial primary key,
+    address_id int references addresses(id),
+    title varchar(280) default '',
+    cid varchar(46) not null,
+    file_size int default 0,
+    content_type varchar(20) default '',
+    published bool default true,
+    created_at timestamp not null default Now()
+);
+
+create table comments(
+    id serial primary key,
+    address_id int references addresses(id),
+    post_id int references posts(id),
+    text varchar(280) default '',
+    created_at timestamp not null default Now()
+);
+
+create table upvotes(
+    id serial primary key,
+    address_id int references addresses(id),
+    post_id int references posts(id),
+    unique (address_id, post_id)
+);
+
+create table downvotes(
+    id serial primary key,
+    address_id int references addresses(id),
+    post_id int references posts(id),
+    unique (address_id, post_id)
+);

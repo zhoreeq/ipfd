@@ -1,0 +1,64 @@
+{{ template "header.html" }}
+
+        <header>
+            <h1 class="rainbow-text">豪華なゴミ箱</h1>
+            <small>exclusive peer-to-peer experience</small>
+        </header>
+
+        {{ if .PostingAllowed }}
+        <hr>
+
+        <div class="postform">
+            <form method="POST" action="./create_post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ .Token }}">
+                <div>title</div>
+                <div>
+                    <input type="text" size="35" name="title">
+                </div>
+
+                <div>file</div>
+                <div>
+                    <input type="file" name="file" required>
+                </div>
+
+                <div >
+                    <input type="submit" value="dump">
+                </div>
+            </form>
+        </div>
+        {{ end }}
+
+        <hr>
+
+        <div class="content">
+            {{ $enableVotes := .EnableVotes }}
+            {{ range .Posts }}
+            <div class="post">
+                <div>{{ mediaTag .CID .ContentType }}</div>
+                <h1><a href="./res/{{ .Id }}.html">{{ .Title }}</a></h1>
+                <div class="post-info">
+                    <div>/ipfs/{{ .CID }}</div>
+                    {{ if $enableVotes }}
+                    <div>
+                        <span class="upvote"><a href="./upvote/{{.Id}}">based</a> {{ .UpCount }}</span>
+                        <span class="downvote"><a href="./downvote/{{.Id}}">cringe</a> {{ .DownCount }}</span>
+                    </div>
+                    {{ end }}
+                    {{ if .CommentsCount }}
+                    <div>comments: {{ .CommentsCount }}</div>
+                    {{ end }}
+                </div>
+            </div>
+            {{ else }}
+            <h2>Empty space</h2>
+            {{ end }}
+
+            <div class="pagination">
+                <a href="./?page={{.PrevPage}}">previous</a>
+                {{ if .NextPage }}
+                <a href="./?page={{.NextPage}}">next</a>
+                {{ end }}
+            </div>
+        </div>
+
+{{ template "footer.html" }}

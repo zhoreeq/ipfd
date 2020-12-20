@@ -1,0 +1,16 @@
+[Unit]
+Description=interplanetary file dumpster
+Wants=network.target
+After=network.target postgresql.service ipfs.service
+Requires=postgresql.service ipfs.service
+
+[Service]
+User=nobody
+Group=nogroup
+ProtectSystem=true
+ExecStart=/usr/local/bin/ipfd -config /etc/ipfd/config
+Restart=always
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target

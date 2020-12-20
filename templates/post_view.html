@@ -1,0 +1,49 @@
+{{ template "header.html" }}
+
+        <header>
+            <p><a href="../">go back</a></p>
+        </header>
+
+        <hr>
+
+        <div class="content">
+
+            <div class="post">
+                <p>{{ mediaTag .Post.CID .Post.ContentType }}</p>
+                <h1>{{ .Post.Title }}</h1>
+                <div class="post-info">
+                    <div>/ipfs/{{ .Post.CID }}</div>
+                    {{ if .EnableVotes }}
+                    <div>
+                    <span class="upvote"><a href="../upvote/{{.Post.Id}}">based</a> {{ .Post.UpCount }}</span>
+                    <span class="downvote"><a href="../downvote/{{.Post.Id}}">cringe</a> {{ .Post.DownCount }}</span>
+                    </div>
+                    {{ end }}
+                </div>
+            </div>
+
+            {{ if .EnableComments }}
+            <div class="comments">
+                <h3>comments:</h3>
+                {{ range .Comments }}
+                <p id="comment{{.Id}}"><a href="#comment{{.Id}}">#</a> {{ .Text }}</p>
+                {{ else }}
+                <small>no comments</small>
+                {{ end }}
+            </div>
+            
+            <div class="postform">
+                <form method="POST" action="../create_comment" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ .Token }}">
+                    <input type="hidden" name="post_id" value="{{.Post.Id}}">
+                    <div>
+                        <input type="text" size="35" name="text" placeholder="comment text" required>
+                    </div>
+                    <small>press enter to submit</small>
+                </form>
+            </div>
+            {{ end }}
+
+        </div>
+
+{{ template "footer.html" }}

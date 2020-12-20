@@ -1,0 +1,16 @@
+SITE_URL=http://127.0.0.1:8000
+SITE_NAME=interplanetary file dumpster
+BIND_ADDRESS=[::]:8000
+DATABASE_URL=postgresql://username:password@localhost/ipfd
+TEMPLATES_PATH=./templates
+STATIC_URL=/static
+STATIC_PATH=./static
+SERVE_STATIC=true
+IPFS_API=/ip4/127.0.0.1/tcp/5001
+IPFS_GATEWAY=http://127.0.0.1:8080/ipfs/
+IPFS_PIN=true
+MAX_FILESIZE=6000000
+ALLOWED_CONTENT_TYPES=image/gif,image/png,image/jpeg,video/mp4,video/webm,audio/ogg,audio/mpeg
+PREMODERATION=false
+ENABLE_COMMENTS=true
+ENABLE_VOTES=true
