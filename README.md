@@ -2,7 +2,7 @@
 
 An [imageboard](https://en.wikipedia.org/wiki/Imageboard), but images are stored in a peer-to-peer network
 
-![Screenshot](contrib/screenshot.jpeg)
+<img src="https://raw.githubusercontent.com/zhoreeq/ipfd/master/contrib/screenshot.jpeg" height=600>
 
 Features:
 
