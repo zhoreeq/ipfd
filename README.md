@@ -40,7 +40,6 @@ Look inside `contrib/` directory for systemd and nginx config files.
 ## Config options
 
 - SITE\_URL, website url, i.e. https://example.org
-- SITE\_PATH, url path, i.e. /
 - SITE\_NAME, website title
 - BIND\_ADDRESS, bind ipfd web server to this address
 - DATABASE\_URL, postgresql connection string
