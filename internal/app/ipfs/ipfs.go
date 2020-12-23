@@ -8,4 +8,5 @@ import (
 
 type Shell interface {
 	Add(r io.Reader, options ...ipfsApi.AddOpts) (string, error)
+	Pin(path string) error
 }

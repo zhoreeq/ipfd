@@ -20,7 +20,7 @@ type Config struct {
 	staticPath          string
 	staticURL           string
 	serveStatic         bool
-	ipfsAPI             string
+	ipfsAPI             []string
 	ipfsGateway         string
 	ipfsPin             bool
 	maxFileSize         int64
@@ -61,7 +61,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, err
 	}
 
-	config.ipfsAPI = os.Getenv("IPFS_API")
+	config.ipfsAPI = strings.Split(os.Getenv("IPFS_API"), ",")
 	config.ipfsGateway = os.Getenv("IPFS_GATEWAY")
 	if config.ipfsPin, err = strconv.ParseBool(os.Getenv("IPFS_PIN")); err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"errors"
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/nosurf"
@@ -47,7 +48,7 @@ type Server struct {
 	router   *mux.Router
 	store    *store.Store
 	template *template.Template
-	ipfs     ipfs.Shell
+	ipfs     []ipfs.Shell
 }
 
 func New(config *Config, log *log.Logger) *Server {
@@ -70,11 +71,17 @@ func Start(config *Config, log *log.Logger) error {
 	defer db.Close()
 	server.store = store.New(db)
 
-	shell, err := newIpfsShell(server.config.ipfsAPI)
-	if err != nil {
-		return err
+	for _, uri := range server.config.ipfsAPI {
+		shell, err := newIpfsShell(uri)
+		if err != nil {
+			server.log.Println(uri, err)
+			continue
+		}
+		server.ipfs = append(server.ipfs, shell)
 	}
-	server.ipfs = shell
+	if len(server.ipfs) == 0 {
+		return errors.New("Failed to connect to IPFS API")
+	}
 
 	server.configureTemplates()
 	server.configureRouter()

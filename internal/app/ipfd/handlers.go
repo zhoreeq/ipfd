@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"errors"
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/nosurf"
@@ -13,6 +14,15 @@ import (
 
 	"github.com/zhoreeq/ipfd/internal/app/models"
 )
+
+// Add pin CID at a specified s.ipfs shell
+func (s *Server) pinAtShell(shellId int, cid string) {
+	err := s.ipfs[shellId].Pin(cid)
+	if err != nil {
+		s.log.Println("Pin error: ", err)
+	}
+}
+
 
 func (s *Server) BoardHandler(w http.ResponseWriter, r *http.Request) {
 	page := getPage(r)
@@ -104,9 +114,20 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		post.Title = "."
 	}
 
-	cid, err := s.ipfs.Add(file, ipfs.Pin(s.config.ipfsPin))
-	if err != nil {
-		s.InternalError(&w, err)
+	var cid string
+	for k := range s.ipfs {
+		if len(cid) == 0 {
+			cid, err = s.ipfs[k].Add(file, ipfs.Pin(s.config.ipfsPin))
+			if err != nil {
+				s.log.Println("Add error", err)
+			}
+		} else {
+			go s.pinAtShell(k, cid)
+		}
+	}
+
+	if len(cid) == 0 {
+		s.InternalError(&w, errors.New("Failed to add file to IPFS"))
 		return
 	}
 
