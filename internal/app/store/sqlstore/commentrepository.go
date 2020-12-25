@@ -1,4 +1,4 @@
-package store
+package sqlstore
 
 import (
 	"github.com/zhoreeq/ipfd/internal/app/models"

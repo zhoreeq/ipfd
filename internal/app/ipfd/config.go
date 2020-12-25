@@ -2,32 +2,32 @@ package ipfd
 
 import (
 	"errors"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
-	"net/url"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	siteURL             string
-	sitePath            string
-	siteName            string
-	bindAddress         string
-	databaseURL         string
-	templatesPath       string
-	staticPath          string
-	staticURL           string
-	serveStatic         bool
-	ipfsAPI             []string
-	ipfsGateway         string
-	ipfsPin             bool
-	maxFileSize         int64
-	allowedContentTypes []string
-	premoderation       bool
-	enableComments      bool
-	enableVotes         bool
+	SiteURL             string
+	SitePath            string
+	SiteName            string
+	BindAddress         string
+	DatabaseURL         string
+	TemplatesPath       string
+	StaticPath          string
+	StaticURL           string
+	ServeStatic         bool
+	IpfsAPI             []string
+	IpfsGateway         string
+	IpfsPin             bool
+	MaxFileSize         int64
+	AllowedContentTypes []string
+	Premoderation       bool
+	EnableComments      bool
+	EnableVotes         bool
 }
 
 func LoadConfig(configPath string) (*Config, error) {
@@ -38,46 +38,46 @@ func LoadConfig(configPath string) (*Config, error) {
 		return config, errors.New("Error loading .env file")
 	}
 
-	config.siteURL = os.Getenv("SITE_URL")
-	if string(config.siteURL[len(config.siteURL)-1]) == "/" {
+	config.SiteURL = os.Getenv("SITE_URL")
+	if string(config.SiteURL[len(config.SiteURL)-1]) == "/" {
 		return nil, errors.New("invalid SITE_URL, remove ending slash")
 	}
 
-	config.sitePath = "/"
+	config.SitePath = "/"
 	var u *url.URL
-	if u, err = url.Parse(config.siteURL); err != nil {
+	if u, err = url.Parse(config.SiteURL); err != nil {
 		return nil, err
 	} else if len(u.Path) != 0 {
-		config.sitePath = u.Path + "/"
+		config.SitePath = u.Path + "/"
 	}
 
-	config.siteName = os.Getenv("SITE_NAME")
-	config.bindAddress = os.Getenv("BIND_ADDRESS")
-	config.databaseURL = os.Getenv("DATABASE_URL")
-	config.templatesPath = os.Getenv("TEMPLATES_PATH")
-	config.staticPath = os.Getenv("STATIC_PATH")
-	config.staticURL = os.Getenv("STATIC_URL")
-	if config.serveStatic, err = strconv.ParseBool(os.Getenv("SERVE_STATIC")); err != nil {
-		return nil, err
-	}
-
-	config.ipfsAPI = strings.Split(os.Getenv("IPFS_API"), ",")
-	config.ipfsGateway = os.Getenv("IPFS_GATEWAY")
-	if config.ipfsPin, err = strconv.ParseBool(os.Getenv("IPFS_PIN")); err != nil {
+	config.SiteName = os.Getenv("SITE_NAME")
+	config.BindAddress = os.Getenv("BIND_ADDRESS")
+	config.DatabaseURL = os.Getenv("DATABASE_URL")
+	config.TemplatesPath = os.Getenv("TEMPLATES_PATH")
+	config.StaticPath = os.Getenv("STATIC_PATH")
+	config.StaticURL = os.Getenv("STATIC_URL")
+	if config.ServeStatic, err = strconv.ParseBool(os.Getenv("SERVE_STATIC")); err != nil {
 		return nil, err
 	}
 
-	if config.maxFileSize, err = strconv.ParseInt(os.Getenv("MAX_FILESIZE"), 10, 64); err != nil {
+	config.IpfsAPI = strings.Split(os.Getenv("IPFS_API"), ",")
+	config.IpfsGateway = os.Getenv("IPFS_GATEWAY")
+	if config.IpfsPin, err = strconv.ParseBool(os.Getenv("IPFS_PIN")); err != nil {
 		return nil, err
 	}
-	config.allowedContentTypes = strings.Split(os.Getenv("ALLOWED_CONTENT_TYPES"), ",")
-	if config.premoderation, err = strconv.ParseBool(os.Getenv("PREMODERATION")); err != nil {
+
+	if config.MaxFileSize, err = strconv.ParseInt(os.Getenv("MAX_FILESIZE"), 10, 64); err != nil {
 		return nil, err
 	}
-	if config.enableComments, err = strconv.ParseBool(os.Getenv("ENABLE_COMMENTS")); err != nil {
+	config.AllowedContentTypes = strings.Split(os.Getenv("ALLOWED_CONTENT_TYPES"), ",")
+	if config.Premoderation, err = strconv.ParseBool(os.Getenv("PREMODERATION")); err != nil {
 		return nil, err
 	}
-	if config.enableVotes, err = strconv.ParseBool(os.Getenv("ENABLE_VOTES")); err != nil {
+	if config.EnableComments, err = strconv.ParseBool(os.Getenv("ENABLE_COMMENTS")); err != nil {
+		return nil, err
+	}
+	if config.EnableVotes, err = strconv.ParseBool(os.Getenv("ENABLE_VOTES")); err != nil {
 		return nil, err
 	}
 

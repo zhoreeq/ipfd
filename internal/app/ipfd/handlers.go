@@ -2,15 +2,15 @@ package ipfd
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
-	"errors"
 
 	"github.com/gorilla/mux"
-	"github.com/justinas/nosurf"
 	ipfs "github.com/ipfs/go-ipfs-api"
+	"github.com/justinas/nosurf"
 
 	"github.com/zhoreeq/ipfd/internal/app/models"
 )
@@ -22,7 +22,6 @@ func (s *Server) pinAtShell(shellId int, cid string) {
 		s.log.Println("Pin error: ", err)
 	}
 }
-
 
 func (s *Server) BoardHandler(w http.ResponseWriter, r *http.Request) {
 	page := getPage(r)
@@ -48,13 +47,13 @@ func (s *Server) BoardHandler(w http.ResponseWriter, r *http.Request) {
 		Posts          []*models.Post
 		PostingAllowed bool
 		EnableVotes    bool
-		Token		   string
+		Token          string
 	}{
 		NextPage:       nextPage,
 		PrevPage:       prevPage,
 		Posts:          posts,
 		PostingAllowed: postingAllowed,
-		EnableVotes:    s.config.enableVotes,
+		EnableVotes:    s.config.EnableVotes,
 		Token:          nosurf.Token(r),
 	}
 
@@ -91,20 +90,20 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	if header.Size > s.config.maxFileSize {
-		http.Error(w, fmt.Sprintf("Max file size is %d", s.config.maxFileSize), 403)
+	if header.Size > s.config.MaxFileSize {
+		http.Error(w, fmt.Sprintf("Max file size is %d", s.config.MaxFileSize), 403)
 		return
 	}
 	post.FileSize = header.Size
 
-	for _, ct := range s.config.allowedContentTypes {
+	for _, ct := range s.config.AllowedContentTypes {
 		if ct == header.Header.Get("Content-Type") {
 			post.ContentType = ct
 		}
 	}
 	if post.ContentType == "" {
 		http.Error(w, fmt.Sprintf("Illegal file type. Allowed types: %s",
-			strings.Join(s.config.allowedContentTypes[:], ", ")), 403)
+			strings.Join(s.config.AllowedContentTypes[:], ", ")), 403)
 		return
 	}
 
@@ -117,7 +116,7 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	var cid string
 	for k := range s.ipfs {
 		if len(cid) == 0 {
-			cid, err = s.ipfs[k].Add(file, ipfs.Pin(s.config.ipfsPin))
+			cid, err = s.ipfs[k].Add(file, ipfs.Pin(s.config.IpfsPin))
 			if err != nil {
 				s.log.Println("Add error", err)
 			}
@@ -133,7 +132,7 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	post.CID = cid
 	post.AddressId = addr.Id
-	if !s.config.premoderation {
+	if !s.config.Premoderation {
 		post.Published = true
 	}
 
@@ -142,7 +141,7 @@ func (s *Server) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("%sres/%d.html", s.config.sitePath, post.Id), 303)
+	http.Redirect(w, r, fmt.Sprintf("%sres/%d.html", s.config.SitePath, post.Id), 303)
 }
 
 func (s *Server) PostViewHandler(w http.ResponseWriter, r *http.Request) {
@@ -167,12 +166,12 @@ func (s *Server) PostViewHandler(w http.ResponseWriter, r *http.Request) {
 		Comments       []*models.Comment
 		EnableVotes    bool
 		EnableComments bool
-		Token		   string
+		Token          string
 	}{
 		Post:           post,
 		Comments:       comments,
-		EnableVotes:    s.config.enableVotes,
-		EnableComments: s.config.enableComments,
+		EnableVotes:    s.config.EnableVotes,
+		EnableComments: s.config.EnableComments,
 		Token:          nosurf.Token(r),
 	}
 
@@ -209,7 +208,7 @@ func (s *Server) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("%sres/%d.html#comment%d", s.config.sitePath, comment.PostId, comment.Id), 303)
+	http.Redirect(w, r, fmt.Sprintf("%sres/%d.html#comment%d", s.config.SitePath, comment.PostId, comment.Id), 303)
 }
 
 func (s *Server) UpvoteHandler(w http.ResponseWriter, r *http.Request) {

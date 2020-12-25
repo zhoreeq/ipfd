@@ -23,14 +23,14 @@ func (s *Server) PostFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feed := &feeds.Feed{
-		Title:       s.config.siteName,
-		Link:        &feeds.Link{Href: s.config.siteURL},
+		Title:       s.config.SiteName,
+		Link:        &feeds.Link{Href: s.config.SiteURL},
 		Description: "Does it need a description?",
 		Created:     created,
 	}
 
 	for _, p := range posts {
-		link := fmt.Sprintf("%s/res/%d.html", s.config.siteURL, p.Id)
+		link := fmt.Sprintf("%s/res/%d.html", s.config.SiteURL, p.Id)
 		feedItem := &feeds.Item{
 			Title:       p.Title,
 			Link:        &feeds.Link{Href: link},
@@ -65,14 +65,14 @@ func (s *Server) CommentFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	feed := &feeds.Feed{
-		Title:       s.config.siteName,
-		Link:        &feeds.Link{Href: s.config.siteURL},
+		Title:       s.config.SiteName,
+		Link:        &feeds.Link{Href: s.config.SiteURL},
 		Description: "Comments feed",
 		Created:     created,
 	}
 
 	for _, p := range comments {
-		link := fmt.Sprintf("%s/res/%d.html#comment%d", s.config.siteURL, p.PostId, p.Id)
+		link := fmt.Sprintf("%s/res/%d.html#comment%d", s.config.SiteURL, p.PostId, p.Id)
 		feedItem := &feeds.Item{
 			Title:       p.Text,
 			Link:        &feeds.Link{Href: link},

@@ -1,95 +1,47 @@
 package ipfd
 
 import (
-	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"strings"
-	"errors"
 
 	"github.com/gorilla/mux"
-	"github.com/justinas/nosurf"
 	"github.com/justinas/alice"
-	_ "github.com/jackc/pgx/v4/stdlib"
-
-	ipfsApi "github.com/ipfs/go-ipfs-api"
+	"github.com/justinas/nosurf"
 
 	"github.com/zhoreeq/ipfd/internal/app/ipfs"
 	"github.com/zhoreeq/ipfd/internal/app/store"
 )
 
-func newDB(dbURL string) (*sql.DB, error) {
-	db, err := sql.Open("pgx", dbURL)
-	if err != nil {
-		return nil, err
-	}
+func New(config *Config, log *log.Logger, dbStore store.Store, ipfsShells []ipfs.Shell) *Server {
+	server := &Server{}
+	server.config = config
+	server.log = log
+	server.router = mux.NewRouter()
+	server.handler = alice.New(nosurf.NewPure).Then(server.router)
+	server.store = dbStore
+	server.ipfs = ipfsShells
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
+	server.configureTemplates()
+	server.configureRouter()
 
-	return db, nil
-}
-
-func newIpfsShell(ipfsAPI string) (*ipfsApi.Shell, error) {
-	shell := ipfsApi.NewShell(ipfsAPI)
-	if _, _, err := shell.Version(); err != nil {
-		return nil, err
-	}
-
-	return shell, nil
+	return server
 }
 
 type Server struct {
 	config   *Config
 	log      *log.Logger
 	router   *mux.Router
-	store    *store.Store
+	handler  http.Handler
+	store    store.Store
 	template *template.Template
 	ipfs     []ipfs.Shell
 }
 
-func New(config *Config, log *log.Logger) *Server {
-	server := &Server{}
-	server.config = config
-	server.log = log
-	server.router = mux.NewRouter()
-
-	return server
-}
-
-func Start(config *Config, log *log.Logger) error {
-	server := New(config, log)
-
-	db, err := newDB(server.config.databaseURL)
-	if err != nil {
-		return err
-	}
-
-	defer db.Close()
-	server.store = store.New(db)
-
-	for _, uri := range server.config.ipfsAPI {
-		shell, err := newIpfsShell(uri)
-		if err != nil {
-			server.log.Println(uri, err)
-			continue
-		}
-		server.ipfs = append(server.ipfs, shell)
-	}
-	if len(server.ipfs) == 0 {
-		return errors.New("Failed to connect to IPFS API")
-	}
-
-	server.configureTemplates()
-	server.configureRouter()
-	chain := alice.New(nosurf.NewPure).Then(server.router)
-	http.Handle("/", chain)
-	server.log.Println("Started on", server.config.bindAddress)
-
-	return http.ListenAndServe(server.config.bindAddress, nil)
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.handler.ServeHTTP(w, r)
 }
 
 func (s *Server) configureRouter() {
@@ -99,20 +51,20 @@ func (s *Server) configureRouter() {
 	s.router.HandleFunc("/board.rss", s.PostFeed)
 	s.router.HandleFunc("/comments.rss", s.CommentFeed)
 
-	if s.config.enableComments {
+	if s.config.EnableComments {
 		s.router.HandleFunc("/create_comment", s.CreateCommentHandler).Methods("POST")
 	}
-	if s.config.enableVotes {
+	if s.config.EnableVotes {
 		s.router.HandleFunc("/upvote/{id:[0-9]+}", s.UpvoteHandler)
 		s.router.HandleFunc("/downvote/{id:[0-9]+}", s.DownvoteHandler)
 	}
-	if s.config.serveStatic {
-		s.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(s.config.staticPath))))
+	if s.config.ServeStatic {
+		s.router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(s.config.StaticPath))))
 	}
 }
 
 func (s *Server) configureTemplates() {
-	templatesGlob := fmt.Sprintf("%s/*.html", s.config.templatesPath)
+	templatesGlob := fmt.Sprintf("%s/*.html", s.config.TemplatesPath)
 	funcs := template.FuncMap{
 		"mediaTag":    s.mediaTag,
 		"staticURL":   s.getStaticUrl,
@@ -122,27 +74,27 @@ func (s *Server) configureTemplates() {
 }
 
 func (s *Server) getIpfsUrl(cid string) string {
-	return fmt.Sprintf("%s%s", s.config.ipfsGateway, cid)
+	return fmt.Sprintf("%s%s", s.config.IpfsGateway, cid)
 }
 
 func (s *Server) getStaticUrl(url string) string {
-	return fmt.Sprintf("%s%s", s.config.staticURL, url)
+	return fmt.Sprintf("%s%s", s.config.StaticURL, url)
 }
 
 func (s *Server) getSiteName() string {
-	return s.config.siteName
+	return s.config.SiteName
 }
 
 func (s *Server) mediaTag(cid, contentType string) template.HTML {
 	var content string
 	if strings.HasPrefix(contentType, "image/") {
-		content = fmt.Sprintf("<img src=\"%s%s\">", s.config.ipfsGateway, cid)
+		content = fmt.Sprintf("<img src=\"%s%s\">", s.config.IpfsGateway, cid)
 	} else if strings.HasPrefix(contentType, "video/") {
-		content = fmt.Sprintf("<video src=\"%s%s\" controls loop></video>", s.config.ipfsGateway, cid)
+		content = fmt.Sprintf("<video src=\"%s%s\" controls loop></video>", s.config.IpfsGateway, cid)
 	} else if strings.HasPrefix(contentType, "audio/") {
-		content = fmt.Sprintf("<audio src=\"%s%s\" controls loop></audio>", s.config.ipfsGateway, cid)
+		content = fmt.Sprintf("<audio src=\"%s%s\" controls loop></audio>", s.config.IpfsGateway, cid)
 	} else {
-		content = fmt.Sprintf("<a href=\"%s%s\" target=\"_blank\">download</a>", s.config.ipfsGateway, cid)
+		content = fmt.Sprintf("<a href=\"%s%s\" target=\"_blank\">download</a>", s.config.IpfsGateway, cid)
 	}
 	return template.HTML(content)
 }
