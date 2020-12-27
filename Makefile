@@ -24,4 +24,7 @@ release:
 	cp -r config.example $(RELEASE_DIR)
 	tar czf $(RELEASE_DIR).tgz $(RELEASE_DIR)
 
-.PHONY: all clean release
+test:
+	go test -v ./...
+
+.PHONY: all clean release test
