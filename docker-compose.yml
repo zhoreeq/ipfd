@@ -1,0 +1,53 @@
+version: '3.7'
+services:
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    volumes:
+      - ipfs_staging:/export
+      - ipfs_data:/data/ipfs
+    ports:
+      - 4001:4001/udp
+      - 4001:4001
+    expose:
+      - 5001
+    restart: always
+
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=ipfd
+      - POSTGRES_PASSWORD=ipfd
+      - POSTGRES_DB=ipfd
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    restart: always
+
+  migrations:
+    image: migrate/migrate:latest
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: migrate -path=/migrations/ -database=postgres://ipfd:ipfd@db/ipfd?sslmode=disable up
+    depends_on:
+      - db
+    restart: on-failure
+
+  app:
+    image: ipfd:latest
+    environment:
+      - SITE_URL=http://ipfd.mooo.com
+      - DATABASE_URL=postgresql://ipfd:ipfd@db/ipfd
+      - IPFS_API=/dns4/ipfs/tcp/5001
+      - IPFS_GATEWAY=https://ipfs.io/ipfs/
+    ports:
+      - 8000:8000
+    depends_on:
+      - ipfs
+      - db
+    restart: always
+
+volumes:
+  db_data:
+  ipfs_staging:
+  ipfs_data:
