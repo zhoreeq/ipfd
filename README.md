@@ -20,6 +20,16 @@ Features:
 - Go 1.15.2 (only for building)
 - A web server is recommended, i.e. nginx
 
+## Run with docker
+
+```
+git clone https://github.com/zhoreeq/ipfd.git && cd ipfd
+docker build -t ipfd .
+docker-compose up -d
+```
+
+The app listens at http://localhost:8000
+
 ## Build
 
 - git clone repo
